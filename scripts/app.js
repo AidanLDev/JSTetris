@@ -53,18 +53,98 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentRotation = 0;
 
   // Randomly select tetromino
-  let nextTetromino = Math.floor(Math.random() * theTetrominoes.length);
-  let current = theTetrominoes[nextTetromino][currentRotation];
+  generateRandomTetromino = () =>
+    Math.floor(Math.random() * theTetrominoes.length);
+
+  let nextTetromino = generateRandomTetromino();
+  let currentTetromino = theTetrominoes[nextTetromino][currentRotation];
 
   draw = () => {
-    current.forEach((shape) => {
+    currentTetromino.forEach((shape) => {
       squares[currentPosition + shape].classList.add('tetromino');
     });
   };
 
   unDraw = () => {
-    current.forEach((shape) => {
-      squares[current + shape].classList.remove('tetromino');
+    currentTetromino.forEach((shape) => {
+      squares[currentPosition + shape].classList.remove('tetromino');
     });
+  };
+
+  // Make tetromino move down every second
+  tiemrId = setInterval(moveDown, 1000);
+  function moveDown() {
+    unDraw();
+    currentPosition += 10;
+    draw();
+    freeze();
+  }
+
+  // Assign keyCodes
+  control = (e) => {
+    if (e.keyCode === 37) {
+      moveLeft();
+    } else if (e.keyCode === 38) {
+      // rotate();
+    } else if (e.keyCode === 39) {
+      moveRight();
+    } else if (e.keyCode === 40) {
+      // moveDown();
+    }
+  };
+
+  document.addEventListener('keyup', control);
+
+  freeze = () => {
+    if (
+      currentTetromino.some((shape) =>
+        squares[currentPosition + shape + 10].classList.contains('taken')
+      )
+    ) {
+      currentTetromino.forEach((shape) =>
+        squares[currentPosition + shape].classList.add('taken')
+      );
+
+      // Next tetromino
+      nextTetromino = generateRandomTetromino();
+      currentTetromino = theTetrominoes[nextTetromino][currentRotation];
+      currentPosition = 4;
+      draw();
+    }
+  };
+
+  moveLeft = () => {
+    unDraw();
+    const isLeftEdge = currentTetromino.some(
+      (index) => (currentPosition + index) % 10 === 0
+    );
+
+    if (!isLeftEdge) currentPosition -= 1;
+    if (
+      currentPosition.some((index) =>
+        squares[currentPosition + index].classList.contains('taken')
+      )
+    ) {
+      currentPosition += 1;
+    }
+    draw();
+  };
+
+  moveRight = () => {
+    unDraw();
+    const isAtRight = currentTetromino.some(
+      (index) => (currentPosition + index) % 10 === 10 - 1
+    );
+
+    if (!isAtRight) currentPosition += 1;
+
+    if (
+      currentTetromino.some((index) =>
+        squares[currentPosition + index].classList.contains('taken')
+      )
+    ) {
+      currentPosition -= 1;
+    }
+    draw();
   };
 });
